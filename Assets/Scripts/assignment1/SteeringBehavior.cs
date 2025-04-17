@@ -28,6 +28,15 @@ public class SteeringBehavior : MonoBehaviour
 
         // you can use kinematic.SetDesiredSpeed(...) and kinematic.SetDesiredRotationalVelocity(...)
         //    to "request" acceleration/decceleration to a target speed/rotational velocity
+
+        //  -- Learned from section --
+        float dist = (target - transform.position).magnitude;
+        Vector3 dir = target - transform.position;
+        float angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
+        label.text = dist.ToString() + " " + angle.ToString();
+        kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed());
+        kinematic.SetDesiredRotationalVelocity(angle); //* angle * Mathf.Sign(angle)); - Can be changed to fit
+        //  ----
     }
 
     public void SetTarget(Vector3 target)
