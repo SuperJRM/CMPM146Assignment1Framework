@@ -10,6 +10,12 @@ public class SteeringBehavior : MonoBehaviour
     // you can use this label to show debug information,
     // like the distance to the (next) target
     public TextMeshProUGUI label;
+
+
+
+    [SerializeField] float arrivalRadius = 1f;
+    [SerializeField] float stopRadius = 1f;
+    [SerializeField] float minDesiredSpeed = 10f;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -34,9 +40,56 @@ public class SteeringBehavior : MonoBehaviour
         Vector3 dir = target - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
         label.text = dist.ToString() + " " + angle.ToString();
-        kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed());
-        kinematic.SetDesiredRotationalVelocity(angle); //* angle * Mathf.Sign(angle)); - Can be changed to fit
-        //  ----
+        //* angle * Mathf.Sign(angle)); - Can be changed to fit
+
+        if (path.Count == 1)
+        {
+            if (dist < stopRadius)
+            {
+                kinematic.SetDesiredSpeed(0);
+            }
+            else if (dist < arrivalRadius)
+            {
+                kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed()/2);
+            }
+            else
+            {
+                if ((1 - (Mathf.Abs(angle)/180)) * kinematic.GetMaxSpeed() < minDesiredSpeed)
+                {
+                    kinematic.SetDesiredSpeed(minDesiredSpeed);
+                }
+                else
+                {
+                    kinematic.SetDesiredSpeed((1 - (Mathf.Abs(angle)/180)) * kinematic.GetMaxSpeed());
+                }
+
+                kinematic.SetDesiredRotationalVelocity(Mathf.Abs(angle)/180 * (kinematic.GetMaxRotationalVelocity() * Mathf.Sign(angle)));
+            }
+        }
+        else
+        {
+            if (dist < stopRadius)
+            {
+                
+            }
+            else if (dist < arrivalRadius)
+            {
+                kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed()/2);
+            }
+            else
+            {
+                if ((1 - (Mathf.Abs(angle)/180)) * kinematic.GetMaxSpeed() < minDesiredSpeed)
+                {
+                    kinematic.SetDesiredSpeed(minDesiredSpeed);
+                }
+                else
+                {
+                    kinematic.SetDesiredSpeed((1 - (Mathf.Abs(angle)/180)) * kinematic.GetMaxSpeed());
+                }
+
+                kinematic.SetDesiredRotationalVelocity(Mathf.Abs(angle)/180 * (kinematic.GetMaxRotationalVelocity() * Mathf.Sign(angle)));
+            }
+        }
     }
 
     public void SetTarget(Vector3 target)
