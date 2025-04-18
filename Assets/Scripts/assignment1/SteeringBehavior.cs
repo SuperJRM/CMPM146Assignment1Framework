@@ -42,7 +42,7 @@ public class SteeringBehavior : MonoBehaviour
         label.text = dist.ToString() + " " + angle.ToString();
         //* angle * Mathf.Sign(angle)); - Can be changed to fit
 
-        if (path.Count == 1)
+        if (path == null || path.Count == 0)
         {
             if (dist < stopRadius)
             {
@@ -68,13 +68,30 @@ public class SteeringBehavior : MonoBehaviour
         }
         else
         {
-            if (dist < stopRadius)
+            if (dist < stopRadius && path != null)
             {
-                
+                if (path.Count > 0)
+                {
+                    SetTarget(path[0]);
+                    path.Remove(path[0]);
+                }
+                else
+                {
+                    kinematic.SetDesiredSpeed(0);
+                }
             }
-            else if (dist < arrivalRadius)
+            if (dist < arrivalRadius && path != null)
             {
-                kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed()/2);
+                if (path.Count > 0)
+                {
+                    //find angle of path[0]
+                    float newAngle = Vector3.SignedAngle(transform.forward, path[0] - transform.position, Vector3.up);
+                    kinematic.SetDesiredSpeed((1 - (Mathf.Abs(angle) / 180)) * kinematic.GetMaxSpeed());
+                }
+                else
+                {
+                    kinematic.SetDesiredSpeed(kinematic.GetMaxSpeed() / 2);
+                }
             }
             else
             {
