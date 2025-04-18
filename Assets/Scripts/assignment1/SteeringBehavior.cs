@@ -40,7 +40,7 @@ public class SteeringBehavior : MonoBehaviour
         Vector3 dir = target - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
         label.text = dist.ToString() + " " + angle.ToString();
-        //* angle * Mathf.Sign(angle)); - Can be changed to fit
+        //  --
 
         if (path == null || path.Count == 0)
         {
