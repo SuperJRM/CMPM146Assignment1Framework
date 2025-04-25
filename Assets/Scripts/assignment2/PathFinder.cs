@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
 
 public class PathFinder : MonoBehaviour
 {
@@ -23,52 +24,100 @@ public class PathFinder : MonoBehaviour
 
         List<GraphNode> frontier = new List<GraphNode>() { start };
 
+        AStarEntry startEntry = new AStarEntry (start, null, 0, Vector3.Distance(start.GetCenter(), destination.GetCenter()));
+        List<AStarEntry> entryList = new List<AStarEntry>() { startEntry };
+
         while (true)
         {
             if (frontier[0].GetID() == destination.GetID())
             {
 
             }
-
+            AStarEntry tempEntry = new AStarEntry (null, null, 0, 0);
+            foreach (AStarEntry entry in entryList)
+            {
+                if (frontier[0].GetID() == entry.currentNode.GetID())
+                {
+                    tempEntry = entry;
+                }
+            }
             List<GraphNeighbor> neighbors = frontier[0].GetNeighbors();
             frontier.RemoveAt(0); // might not work lol, might need a ref to the specific item
             nodesExpanded += 1;
 
+
             foreach (GraphNeighbor neighbor in neighbors)
             {
+                int requiresRemoval = -1;
                 bool requiresInsertion = true;
+                bool requiresEntry = true;
 
                 // create entry for current graph node
                 foreach (GraphNode node in frontier)
                 {
                     if (neighbor.GetNode().GetID() == node.GetID()) // check if copy
                     {
-                        float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), start.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
-                        float nodeFValue = Vector3.Distance(node.GetCenter(), start.GetCenter()) + Vector3.Distance(node.GetCenter(), destination.GetCenter());
-
-                        if (neighborFValue >= nodeFValue)
+                        foreach (AStarEntry entry in entryList)
                         {
-                            requiresInsertion = false;
+                            if (node.GetID() == entry.currentNode.GetID())
+                            {
+                                float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNode.GetCenter()) + tempEntry.distanceFromStart;
+                                if (neighborFValue < entry.distanceFromStart)
+                                {
+                                    entry.currentNode = neighbor.GetNode();
+                                    entry.previousNode = tempEntry;
+                                    entry.distanceFromStart = neighborFValue;
+                                    requiresRemoval = node.GetID();
+                                    requiresEntry = false;
+                                }
+                                else
+                                {
+                                    requiresInsertion = false;
+                                    requiresEntry = false;
+                                }
+                                break;
+                            }
                         }
-                        else
-                        {
-                            //remove item
-                        }
+                        break;   
                     }
                 }
 
+                if (requiresRemoval != 0)
+                {
+                    GraphNode deleteNode = null;
+                    foreach (GraphNode node in frontier)
+                    {
+                        if (node.GetID() == requiresRemoval)
+                        {
+                            deleteNode = node;
+                            break;
+                        }
+                    }
+                    frontier.Remove(deleteNode);
+                }
 
-
-                if (requiresInsertion) // check to see if 
+                if (requiresInsertion)
                 {
                     int insertIndex = -1;
                     int i = 0;
+                    float neighborFValue = 0;
+
                     foreach (GraphNode node2 in frontier)
                     {
-                        float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), start.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
-                        float nodeFValue = Vector3.Distance(node2.GetCenter(), start.GetCenter()) + Vector3.Distance(node2.GetCenter(), destination.GetCenter());
+                        foreach (AStarEntry entry in entryList)
+                        {
+                            if (node2.GetID() == entry.currentNode.GetID())
+                            {
+                                neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNode.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
+                                if (neighborFValue < entry.distanceFromStart)
+                                {
 
-                        if (neighborFValue < nodeFValue)
+                                }
+                                break;
+                            }
+                        }
+
+                        if (neighborFValue < 0) // Replace 0 with node 2 entry data
                         {
                             insertIndex = i;
                             break;
@@ -132,10 +181,10 @@ public class PathFinder : MonoBehaviour
 
     public class AStarEntry
     {
-        GraphNode currentNode;
-        AStarEntry previousNode;
-        float distanceFromStart;
-        float distanceFromEnd;
+        public GraphNode currentNode;
+        public AStarEntry previousNode;
+        public float distanceFromStart;
+        public float distanceFromEnd;
 
         public AStarEntry(GraphNode currentNode, AStarEntry previousNode, float distanceFromStart, float distanceFromEnd)
         {
