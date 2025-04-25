@@ -22,6 +22,41 @@ public class PathFinder : MonoBehaviour
         // return path and number of nodes expanded
         return (path, 0);
 
+
+        /* Implement A* here    
+        List<Vector3> path = new List<Vector3>() {start.GetCenter()}; //target };
+
+        while (true)
+        {
+            GraphNeighbor best = start.GetNeighbor(Random.Range(0, start.GetNeighbors().Count));
+            path.Add(best.GetNode().GetCenter());
+            start = best.GetNode();
+            if (start == destination) break;
+        }
+
+        path.Add(target);
+
+        // return path and number of nodes expanded
+        return (path, 0);
+
+        /*frontiers - {(start, 0, euclideanDistance(target, start))}
+         while (true)
+            best = frontier.popHighestPrioirity()
+            if best == destination {
+                for each neighbor of best.naighbors);
+                    if not expanded(neighbor) {
+                        frontier.add(neighbor. best.d + edge, euc(target, neighbor), best)
+                        }
+                       }
+                    }
+                }
+            }
+        ]
+        //Sorted array, create function to add and remove from array
+        
+        //Find parents (AStarEntry -> node,d,h,priority = h+d, parent)
+         */
+
     }
 
     public Graph graph;
