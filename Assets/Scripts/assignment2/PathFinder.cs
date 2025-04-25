@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class PathFinder : MonoBehaviour
 {
@@ -16,12 +17,82 @@ public class PathFinder : MonoBehaviour
     // Take a look at StandaloneTests.cs for some test cases
     public static (List<Vector3>, int) AStar(GraphNode start, GraphNode destination, Vector3 target)
     {
+        int nodesExpanded = 0;
         // Implement A* here
         List<Vector3> path = new List<Vector3>() { target };
 
-        // return path and number of nodes expanded
-        return (path, 0);
+        List<GraphNode> frontier = new List<GraphNode>() { start };
 
+        while (true)
+        {
+            if (frontier[0].GetID() == destination.GetID())
+            {
+
+            }
+
+            List<GraphNeighbor> neighbors = frontier[0].GetNeighbors();
+            frontier.RemoveAt(0); // might not work lol, might need a ref to the specific item
+            nodesExpanded += 1;
+
+            foreach (GraphNeighbor neighbor in neighbors)
+            {
+                bool requiresInsertion = true;
+
+                // create entry for current graph node
+                foreach (GraphNode node in frontier)
+                {
+                    if (neighbor.GetNode().GetID() == node.GetID()) // check if copy
+                    {
+                        float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), start.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
+                        float nodeFValue = Vector3.Distance(node.GetCenter(), start.GetCenter()) + Vector3.Distance(node.GetCenter(), destination.GetCenter());
+
+                        if (neighborFValue >= nodeFValue)
+                        {
+                            requiresInsertion = false;
+                        }
+                        else
+                        {
+                            //remove item
+                        }
+                    }
+                }
+
+
+
+                if (requiresInsertion) // check to see if 
+                {
+                    int insertIndex = -1;
+                    int i = 0;
+                    foreach (GraphNode node2 in frontier)
+                    {
+                        float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), start.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
+                        float nodeFValue = Vector3.Distance(node2.GetCenter(), start.GetCenter()) + Vector3.Distance(node2.GetCenter(), destination.GetCenter());
+
+                        if (neighborFValue < nodeFValue)
+                        {
+                            insertIndex = i;
+                            break;
+                        }
+
+                        i += 1;
+                    }
+
+                    if (insertIndex == -1)
+                    {
+                        frontier.Append(neighbor.GetNode());
+                    }
+                    else
+                    {  
+                        frontier.Insert(insertIndex, neighbor.GetNode());
+                    }
+                }
+            }
+        }
+
+        // return path and number of nodes expanded
+        return (path, nodesExpanded);
+
+        
 
         /* Implement A* here    
         List<Vector3> path = new List<Vector3>() {start.GetCenter()}; //target };
@@ -57,6 +128,22 @@ public class PathFinder : MonoBehaviour
         //Find parents (AStarEntry -> node,d,h,priority = h+d, parent)
          */
 
+    }
+
+    public class AStarEntry
+    {
+        GraphNode currentNode;
+        AStarEntry previousNode;
+        float distanceFromStart;
+        float distanceFromEnd;
+
+        public AStarEntry(GraphNode currentNode, AStarEntry previousNode, float distanceFromStart, float distanceFromEnd)
+        {
+            this.currentNode = currentNode;
+            this.previousNode = previousNode;
+            this.distanceFromStart = distanceFromStart;
+            this.distanceFromEnd = distanceFromEnd;
+        }
     }
 
     public Graph graph;
