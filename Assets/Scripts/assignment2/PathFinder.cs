@@ -24,19 +24,30 @@ public class PathFinder : MonoBehaviour
 
         List<GraphNode> frontier = new List<GraphNode>() { start };
 
-        AStarEntry startEntry = new AStarEntry (start, null, 0, Vector3.Distance(start.GetCenter(), destination.GetCenter()));
+        GraphNeighbor startNeighbor = new GraphNeighbor(start, null);
+        AStarEntry startEntry = new AStarEntry (startNeighbor, null, 0, Vector3.Distance(start.GetCenter(), destination.GetCenter()));
         List<AStarEntry> entryList = new List<AStarEntry>() { startEntry };
 
         while (true)
         {
             if (frontier[0].GetID() == destination.GetID())
             {
+                foreach (AStarEntry entry in entryList)
+                {
+                    if (entry.currentNeighbor.GetNode().GetID() == frontier[0].GetID())
+                    {
+                        path.Prepend(entry.currentNeighbor.GetWall().midpoint);
 
+                        // make loop to prepend every previous nodes info
+                    }
+                }
+                break;
             }
+
             AStarEntry tempEntry = new AStarEntry (null, null, 0, 0);
             foreach (AStarEntry entry in entryList)
             {
-                if (frontier[0].GetID() == entry.currentNode.GetID())
+                if (frontier[0].GetID() == entry.currentNeighbor.GetNode().GetID())
                 {
                     tempEntry = entry;
                 }
@@ -59,12 +70,12 @@ public class PathFinder : MonoBehaviour
                     {
                         foreach (AStarEntry entry in entryList)
                         {
-                            if (node.GetID() == entry.currentNode.GetID())
+                            if (node.GetID() == entry.currentNeighbor.GetNode().GetID())
                             {
-                                float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNode.GetCenter()) + tempEntry.distanceFromStart;
+                                float neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNeighbor.GetNode().GetCenter()) + tempEntry.distanceFromStart;
                                 if (neighborFValue < entry.distanceFromStart)
                                 {
-                                    entry.currentNode = neighbor.GetNode();
+                                    entry.currentNeighbor = neighbor;
                                     entry.previousNode = tempEntry;
                                     entry.distanceFromStart = neighborFValue;
                                     requiresRemoval = node.GetID();
@@ -82,7 +93,7 @@ public class PathFinder : MonoBehaviour
                     }
                 }
 
-                if (requiresRemoval != 0)
+                if (requiresRemoval != -1)
                 {
                     GraphNode deleteNode = null;
                     foreach (GraphNode node in frontier)
@@ -106,20 +117,19 @@ public class PathFinder : MonoBehaviour
                     {
                         foreach (AStarEntry entry in entryList)
                         {
-                            if (node2.GetID() == entry.currentNode.GetID())
+                            if (node2.GetID() == entry.currentNeighbor.GetNode().GetID())
                             {
-                                neighborFValue = Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNode.GetCenter()) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
-                                if (neighborFValue < entry.distanceFromStart)
+                                neighborFValue = (Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNeighbor.GetNode().GetCenter()) + tempEntry.distanceFromStart) + Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter());
+                                if (neighborFValue < entry.distanceFromStart + entry.distanceFromEnd)
                                 {
-
+                                    insertIndex = i;
                                 }
                                 break;
                             }
                         }
 
-                        if (neighborFValue < 0) // Replace 0 with node 2 entry data
+                        if (insertIndex > -1)
                         {
-                            insertIndex = i;
                             break;
                         }
 
@@ -135,60 +145,30 @@ public class PathFinder : MonoBehaviour
                         frontier.Insert(insertIndex, neighbor.GetNode());
                     }
                 }
+
+                if (requiresEntry)
+                {
+                    AStarEntry newEntry = new AStarEntry(neighbor, tempEntry, Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNeighbor.GetNode().GetCenter()) + tempEntry.distanceFromStart, Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter()));
+                    entryList.Append(newEntry);
+                }
             }
         }
 
         // return path and number of nodes expanded
         return (path, nodesExpanded);
 
-        
-
-        /* Implement A* here    
-        List<Vector3> path = new List<Vector3>() {start.GetCenter()}; //target };
-
-        while (true)
-        {
-            GraphNeighbor best = start.GetNeighbor(Random.Range(0, start.GetNeighbors().Count));
-            path.Add(best.GetNode().GetCenter());
-            start = best.GetNode();
-            if (start == destination) break;
-        }
-
-        path.Add(target);
-
-        // return path and number of nodes expanded
-        return (path, 0);
-
-        /*frontiers - {(start, 0, euclideanDistance(target, start))}
-         while (true)
-            best = frontier.popHighestPrioirity()
-            if best == destination {
-                for each neighbor of best.naighbors);
-                    if not expanded(neighbor) {
-                        frontier.add(neighbor. best.d + edge, euc(target, neighbor), best)
-                        }
-                       }
-                    }
-                }
-            }
-        ]
-        //Sorted array, create function to add and remove from array
-        
-        //Find parents (AStarEntry -> node,d,h,priority = h+d, parent)
-         */
-
     }
 
     public class AStarEntry
     {
-        public GraphNode currentNode;
+        public GraphNeighbor currentNeighbor;
         public AStarEntry previousNode;
         public float distanceFromStart;
         public float distanceFromEnd;
 
-        public AStarEntry(GraphNode currentNode, AStarEntry previousNode, float distanceFromStart, float distanceFromEnd)
+        public AStarEntry(GraphNeighbor currentNode, AStarEntry previousNode, float distanceFromStart, float distanceFromEnd)
         {
-            this.currentNode = currentNode;
+            this.currentNeighbor = currentNode;
             this.previousNode = previousNode;
             this.distanceFromStart = distanceFromStart;
             this.distanceFromEnd = distanceFromEnd;
