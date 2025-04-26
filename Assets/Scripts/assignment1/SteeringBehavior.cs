@@ -39,7 +39,7 @@ public class SteeringBehavior : MonoBehaviour
         float dist = (target - transform.position).magnitude;
         Vector3 dir = target - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
-        label.text = dist.ToString() + " " + angle.ToString();
+        //label.text = dist.ToString() + " " + angle.ToString();
         //  --
 
         if (path == null || path.Count == 0)

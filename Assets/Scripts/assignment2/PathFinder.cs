@@ -24,38 +24,61 @@ public class PathFinder : MonoBehaviour
 
         List<GraphNode> frontier = new List<GraphNode>() { start };
 
+        Debug.Log(start.GetID());
+
         GraphNeighbor startNeighbor = new GraphNeighbor(start, null);
         AStarEntry startEntry = new AStarEntry (startNeighbor, null, 0, Vector3.Distance(start.GetCenter(), destination.GetCenter()));
         List<AStarEntry> entryList = new List<AStarEntry>() { startEntry };
 
         while (true)
         {
-            if (frontier[0].GetID() == destination.GetID())
+            if (frontier.Count >= 1)
             {
-                foreach (AStarEntry entry in entryList)
+                if (frontier[0].GetID() == destination.GetID())
                 {
-                    if (entry.currentNeighbor.GetNode().GetID() == frontier[0].GetID())
+                    foreach (AStarEntry entry in entryList)
                     {
-                        path.Prepend(entry.currentNeighbor.GetWall().midpoint);
+                        if (entry.currentNeighbor.GetNode().GetID() == frontier[0].GetID())
+                        {
+                            AStarEntry currentEntry = entry;
+                            
+                            while (true)
+                            {
+                                if (currentEntry.currentNeighbor.GetWall() != null)
+                                {
+                                    path.Insert(0, currentEntry.currentNeighbor.GetWall().midpoint);
+                                }
 
-                        // make loop to prepend every previous nodes info
+                                
+                                if (currentEntry.currentNeighbor.GetNode().GetID() == start.GetID())
+                                {
+                                    path.Insert(0, start.GetCenter());
+                                    break;
+                                }
+
+                                currentEntry = currentEntry.previousNode;
+                            }
+                        }
                     }
+                    break;
                 }
-                break;
             }
 
             AStarEntry tempEntry = new AStarEntry (null, null, 0, 0);
             foreach (AStarEntry entry in entryList)
             {
-                if (frontier[0].GetID() == entry.currentNeighbor.GetNode().GetID())
+                if (frontier.Count >= 1)
                 {
-                    tempEntry = entry;
+                    if (frontier[0].GetID() == entry.currentNeighbor.GetNode().GetID())
+                    {
+                        tempEntry = entry;
+                    }
                 }
             }
+
             List<GraphNeighbor> neighbors = frontier[0].GetNeighbors();
             frontier.RemoveAt(0); // might not work lol, might need a ref to the specific item
             nodesExpanded += 1;
-
 
             foreach (GraphNeighbor neighbor in neighbors)
             {
@@ -138,7 +161,7 @@ public class PathFinder : MonoBehaviour
 
                     if (insertIndex == -1)
                     {
-                        frontier.Append(neighbor.GetNode());
+                        frontier.Add(neighbor.GetNode());
                     }
                     else
                     {  
@@ -149,11 +172,12 @@ public class PathFinder : MonoBehaviour
                 if (requiresEntry)
                 {
                     AStarEntry newEntry = new AStarEntry(neighbor, tempEntry, Vector3.Distance(neighbor.GetNode().GetCenter(), tempEntry.currentNeighbor.GetNode().GetCenter()) + tempEntry.distanceFromStart, Vector3.Distance(neighbor.GetNode().GetCenter(), destination.GetCenter()));
-                    entryList.Append(newEntry);
+                    entryList.Add(newEntry);
                 }
             }
         }
 
+        Debug.Log("returning path");
         // return path and number of nodes expanded
         return (path, nodesExpanded);
 
