@@ -19,6 +19,31 @@ public class NavMesh : MonoBehaviour
     //    you are splitting)
     public Graph MakeNavMesh(List<Wall> outline)
     {
+        /*  Print Lines Debug
+        foreach (Wall wall in outline)
+        {
+            Debug.DrawLine(wall.start, wall.end, Color.cyan, 25, false);
+        }
+        /*
+        Wall first = outline[0];
+        Wall second = outline[1];
+        Debug.DrawLine(first.start, second.end, Color.cyan, 25, false);
+        */
+
+        // Used to find angle
+        for (int i = 0; i < outline.Count; i++)
+        {
+            Wall first = outline[i];
+            Wall second = outline[(i + 1)%outline.Count];
+            if (Vector3.Dot(first.normal, second.direction) < 0)
+            {
+                Debug.Log("Reflex Angle!");
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.position = first.end; // second.start
+                sphere.transform.localScale = Vector3.one * 5;
+            }
+        }
+
         Graph g = new Graph();
         g.all_nodes = new List<GraphNode>();
         return g;
