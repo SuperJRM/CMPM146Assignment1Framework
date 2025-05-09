@@ -37,11 +37,23 @@ public class NavMesh : MonoBehaviour
             Wall second = outline[(i + 1)%outline.Count];
             if (Vector3.Dot(first.normal, second.direction) < 0)
             {
-                Debug.Log("Reflex Angle!");
-                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.position = first.end; // second.start
-                sphere.transform.localScale = Vector3.one * 5;
-            }
+                for (int j = 2; j < outline.Count; j++)
+                {
+                    Wall third = outline[j];
+                    for (int k = 2; k < outline.Count; k++)
+                    {
+                        if (third.Crosses(first.end, third.end)) {
+                            // Check here
+                        }
+                   
+                    }
+                }
+
+                    /*Debug.Log("Reflex Angle!");
+                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.transform.position = first.end; // second.start
+                    sphere.transform.localScale = Vector3.one * 5;*/
+                }
         }
 
         Graph g = new Graph();
