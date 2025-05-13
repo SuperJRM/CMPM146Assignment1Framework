@@ -83,15 +83,17 @@ public class NavMesh : MonoBehaviour
                     for (int k = 0; k < outline.Count; k++)
                     {
                         Wall checkWall = outline[k];
-                        if (checkWall.Crosses(first.end, outline[j].end)) 
-                        {
-                            Debug.Log("crosses");
-                            crosses = true;
-                            break;
+                        if (k != i && k != (i + 1) % outline.Count && k != j && k != (j + 1) % outline.Count) { 
+                            if (checkWall.Crosses(first.end, outline[j].end)) 
+                            {
+                                Debug.Log("crosses");
+                                crosses = true;
+                                break;
+                            }
                         }
                     }
 
-                    if (Vector3.Dot(first.normal, (outline[j].end - first.end).normalized) < 0 || Vector3.Dot(outline[j].normal, (first.end - outline[j].end).normalized) < 0) /////////
+                    if (Vector3.Dot(first.normal, (outline[j].end - first.end).normalized) < 0 /*|| Vector3.Dot(newwall.normal, second.direction) < 0*/) /////////
                     {
                         Debug.Log("creates reflex");
                         createsReflex = true;
@@ -99,6 +101,7 @@ public class NavMesh : MonoBehaviour
 
                     if (!crosses && !createsReflex)
                     {
+                        Debug.Log("CLEAR");
                         List<Wall> polygon1;
                         List<Wall> polygon2;
 
@@ -119,6 +122,9 @@ public class NavMesh : MonoBehaviour
                                 polygon2.AddRange(outline.GetRange(0, i - 1));
                             }
                             polygon2.Add(newWall);
+
+                            Split(polygon1);
+                            Split(polygon2);
                         }
                         else
                         {
@@ -135,11 +141,10 @@ public class NavMesh : MonoBehaviour
                                 polygon2.AddRange(outline.GetRange(0, j - 1));
                             }
                             polygon2.Add(newWall);
+
+                            Split(polygon1);
+                            Split(polygon2);
                         }
-
-                        Split(polygon1);
-                        Split(polygon2);
-
                         Debug.Log("returning");
                         return;
                     }
@@ -153,15 +158,18 @@ public class NavMesh : MonoBehaviour
                         for (int k = 0; k < outline.Count; k++)
                         {
                             Wall checkWall = outline[k];
-                            if (checkWall.Crosses(first.end, outline[j].end)) 
+                            if (k != i && k != (i + 1) % outline.Count && k != j && k != (j + 1) % outline.Count)
                             {
-                                Debug.Log("crosses");
-                                crosses = true;
-                                break;
+                                if (checkWall.Crosses(first.end, outline[j].end))
+                                {
+                                    Debug.Log("crosses");
+                                    crosses = true;
+                                    break;
+                                }
                             }
                         }
 
-                        if (Vector3.Dot(first.normal, (outline[j].end - first.end).normalized) < 0 || Vector3.Dot(outline[j].normal, (first.end - outline[j].end).normalized) < 0) /////////
+                        if (Vector3.Dot(first.normal, (outline[j].end - first.end).normalized) < 0 /*|| Vector3.Dot(newwall.normal, second.direction) < 0*/)  /////////
                         {
                             Debug.Log("creates reflex");
                             createsReflex = true;
@@ -181,8 +189,18 @@ public class NavMesh : MonoBehaviour
                                 polygon1.Add(newWall);
 
                                 polygon2 = outline.GetRange(j, outline.Count - j);
-                                polygon2.AddRange(outline.GetRange(0, i - 1));
+                                if (i == 0)
+                                {
+                                    polygon2.Add(outline[0]);
+                                }
+                                else
+                                {
+                                    polygon2.AddRange(outline.GetRange(0, i - 1));
+                                }
                                 polygon2.Add(newWall);
+
+                                Split(polygon1);
+                                Split(polygon2);
                             }
                             else
                             {
@@ -190,13 +208,19 @@ public class NavMesh : MonoBehaviour
                                 polygon1.Add(newWall);
 
                                 polygon2 = outline.GetRange(i, outline.Count - i);
-                                polygon2.AddRange(outline.GetRange(0, j - 1));
+                                if (j == 0)
+                                {
+                                    polygon2.Add(outline[0]);
+                                }
+                                else
+                                {
+                                    polygon2.AddRange(outline.GetRange(0, j - 1));
+                                }
                                 polygon2.Add(newWall);
+
+                                Split(polygon1);
+                                Split(polygon2);
                             }
-
-                            Split(polygon1);
-                            Split(polygon2);
-
                             Debug.Log("returning");
                             return;
                         }
